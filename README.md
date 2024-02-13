@@ -14,9 +14,11 @@ Este proyecto proporciona una solución automatizada para descargar música de Y
 
 3. **Instala las dependencias de Python** ejecutando el siguiente comando en la terminal:
 
+pip install youtube_dl
 
 4. **Instala las dependencias de Node.js** ejecutando el siguiente comando en la terminal:
 
+npm install
 
 ## Uso 🚀
 
