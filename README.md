@@ -2,38 +2,29 @@
 
 Este proyecto proporciona una solución automatizada para descargar música de YouTube utilizando enlaces proporcionados por el usuario. Simplemente, ingresa los enlaces de YouTube al archivo `youtube_links.txt` o directamente en la consola, y el script se encargará de descargar los archivos de audio y convertirlos a formato mp3.
 
-## Instalación 🛠️
+## Uso con Docker 🐳
 
 1. **Clona este repositorio** o descarga el archivo ZIP.
 
-2. **Asegúrate de tener instalados** los siguientes programas y bibliotecas:
+2. **Asegúrate de tener Docker instalado** en tu sistema. Puedes encontrar instrucciones de instalación para [Windows](https://docs.docker.com/desktop/install/) y [Linux](https://docs.docker.com/engine/install/).
 
-   - [Python](https://www.python.org/downloads/)
-   - [Node.js](https://nodejs.org/)
-   - PowerShell (ya viene preinstalado en Windows)
+3. **Construye la imagen Docker** ejecutando el siguiente comando en la línea de comandos dentro del directorio raíz del proyecto:
 
-3. **Instala las dependencias de Python** ejecutando el siguiente comando en la terminal:
+   ```bash
+   docker build -t download_music .
 
-pip install youtube_dl
-
-4. **Instala las dependencias de Node.js** ejecutando el siguiente comando en la terminal:
-
-npm install
 
 ## Uso 🚀
 
-1. **Crea un archivo `youtube_links.txt`** en el directorio raíz del proyecto si no existe. Este archivo contendrá los enlaces de YouTube que deseas descargar.
 
-2. **Ejecuta el script PowerShell** `download_music.ps1` en la línea de comandos:
+1. **Ejecuta el script PowerShell** `docker run -it download_music` en la línea de comandos:
 
 
-3. **El script Python `save_links.py` se ejecutará automáticamente**. Este script te permitirá ingresar enlaces de YouTube manualmente o cargarlos desde el archivo `youtube_links.txt`.
+2. **Una vez que hayas ingresado todos los enlaces**, el script comenzará a descargar los archivos de audio en formato `.webm` en una carpeta llamada `webm`.
 
-4. **Una vez que hayas ingresado todos los enlaces**, el script comenzará a descargar los archivos de audio en formato `.webm` en una carpeta llamada `webm`.
+3. **Después de que se completen todas las descargas**, se llamará al script JavaScript `convert_audio.js`. Este script convertirá todos los archivos de audio `.webm` en formato `.mp3` y los guardará en una carpeta llamada `mp3`.
 
-5. **Después de que se completen todas las descargas**, se llamará al script JavaScript `convert_audio.js`. Este script convertirá todos los archivos de audio `.webm` en formato `.mp3` y los guardará en una carpeta llamada `mp3`.
-
-6. ¡Listo! Ahora puedes encontrar tus canciones descargadas y convertidas en la carpeta `mp3`.
+4. ¡Listo! Ahora puedes encontrar tus canciones descargadas y convertidas en la carpeta `mp3`.
 
 ## Notas ℹ️
 
