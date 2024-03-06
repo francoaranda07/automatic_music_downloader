@@ -132,7 +132,7 @@ def main():
 
     finally:
         # Ejecutar convert_audio.js con Node.js
-        os.system('node .\\src\\convert_audio.js')
+        os.system('node ./src/convert_audio.js')
         remove_links_from_file(mylist, fileWithLinks)
 
 if __name__ == "__main__":
