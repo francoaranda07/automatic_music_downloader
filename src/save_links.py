@@ -1,53 +1,62 @@
 import os
+import datetime
+from colorama import init, Fore, Style
 from download import extractSound
+
+# Inicializar colorama
+init(autoreset=True)
 
 fileWithLinks = 'youtube_links.txt'
 validLink = 'https://www.youtube.com/watch?v=xxxxxxxxxxx'
 webmFolder = './webm'
 mp3Folder = './mp3'
 
+def log(msg, color=Fore.WHITE):
+    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+    print(f"{color}[{timestamp}] {msg}{Style.RESET_ALL}")
+
 def ensure_file_exists(filename):
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
-            pass  # crea el archivo vacío
+            pass
 
 def create_webm_folder_if_not_exists(folder_route):
     if not os.path.exists(folder_route):
         os.makedirs(folder_route)
-        print(f"Carpeta creada: {folder_route} ✅")
+        log(f"Carpeta creada: {folder_route} ✅", Fore.GREEN)
     else:
-        print(f"La carpeta ya existe: {folder_route} 📂")
+        log(f"La carpeta ya existe: {folder_route} 📂", Fore.CYAN)
         file_in_folder = os.listdir(webmFolder)
         for file in file_in_folder:
             folder_route = os.path.join(webmFolder, file)
             try:
                 if os.path.isfile(folder_route):
                     os.remove(folder_route)
-                    print(f"Archivo eliminado: {folder_route} 🗑️")
+                    log(f"Archivo eliminado: {folder_route} 🗑️", Fore.YELLOW)
                 elif os.path.isdir(folder_route):
                     os.rmdir(folder_route)
-                    print(f"Carpeta eliminada: {folder_route} 🗑️")
+                    log(f"Carpeta eliminada: {folder_route} 🗑️", Fore.YELLOW)
             except Exception as e:
-                print(f"No se pudo eliminar {folder_route}: {e}")
+                log(f"No se pudo eliminar {folder_route}: {e}", Fore.RED)
 
 def create_mp3_folder_if_not_exists(folder_route):
     if not os.path.exists(folder_route):
         os.makedirs(folder_route)
-        print(f"Carpeta creada: {folder_route} ✅")
+        log(f"Carpeta creada: {folder_route} ✅", Fore.GREEN)
     else:
-        print(f"La carpeta ya existe: {folder_route} 📂")
+        log(f"La carpeta ya existe: {folder_route} 📂", Fore.CYAN)
         file_in_folder = os.listdir(mp3Folder)
         for file in file_in_folder:
             folder_route = os.path.join(mp3Folder, file)
             try:
                 if os.path.isfile(folder_route):
                     os.remove(folder_route)
-                    print(f"Archivo eliminado: {folder_route} 🗑️")
+                    log(f"Archivo eliminado: {folder_route} 🗑️", Fore.YELLOW)
                 elif os.path.isdir(folder_route):
                     os.rmdir(folder_route)
-                    print(f"Carpeta eliminada: {folder_route} 🗑️")
+                    log(f"Carpeta eliminada: {folder_route} 🗑️", Fore.YELLOW)
             except Exception as e:
-                print(f"No se pudo eliminar {folder_route}: {e}")
+                log(f"No se pudo eliminar {folder_route}: {e}", Fore.RED)
 
 def adjust_length(fileWithLinks, validLink):
     youtube_link_length = len(validLink)
@@ -58,15 +67,15 @@ def adjust_length(fileWithLinks, validLink):
             line = line.strip()
             if len(line) != youtube_link_length:
                 line = line[:youtube_link_length].ljust(youtube_link_length)
-                print("✂️ Línea ajustada:", line)
+                log(f"✂️ Línea ajustada: {line}", Fore.MAGENTA)
             else:
-                print("✅ Línea válida:", line)
+                log(f"✅ Línea válida: {line}", Fore.GREEN)
             adjusted_lines.append(line)
 
     with open(fileWithLinks, 'w') as file:
         for line in adjusted_lines:
             file.write(line + '\n')
-    print("✍️ Archivo guardado con las líneas ajustadas.")
+    log("✍️ Archivo guardado con las líneas ajustadas.", Fore.CYAN)
 
 def sanitize_link(link):
     return link.split('&')[0] if '&' in link else link
@@ -92,41 +101,42 @@ def main():
     create_webm_folder_if_not_exists(webmFolder)
     create_mp3_folder_if_not_exists(mp3Folder)
     ensure_file_exists(fileWithLinks)
-    mylist = []  # <- ahora siempre existe, aunque no se entre al try
+    mylist = []
 
     try:
         while True:
-            youtube_link = input("Introduce un enlace de YouTube (o CTRL+C para salir): ").strip()
+            youtube_link = input(Fore.YELLOW + "Introduce un enlace de YouTube (o CTRL+C para salir): " + Style.RESET_ALL).strip()
 
             if len(youtube_link) < len(validLink):
-                print("🗑️ Enlace inválido. Demasiado corto.")
+                log("🗑️ Enlace inválido. Demasiado corto.", Fore.RED)
             else:
                 sanitized_link = sanitize_link(youtube_link)
                 if is_link_already_saved(sanitized_link, fileWithLinks):
-                    print("🗑️ -> El enlace ya está guardado.")
+                    log("🗑️ -> El enlace ya está guardado.", Fore.RED)
                 else:
                     save_links_to_file([sanitized_link], fileWithLinks)
-                    print("✅ Enlace guardado")
+                    log("✅ Enlace guardado", Fore.GREEN)
 
     except (KeyboardInterrupt, EOFError):
-        print("\n--------------------------------↓")
-        print("Iniciando la descarga")
+        log("Interrupción detectada. Iniciando descarga...", Fore.CYAN)
         adjust_length(fileWithLinks, validLink)
 
         with open(fileWithLinks) as f:
             mylist = [line.rstrip('\n') for line in f]
 
         for link in mylist:
-            print(link)
+            log(f"Descargando: {link}", Fore.BLUE)
             extractSound(link)
 
-        print("\nDescargados")
-        print("----------------------------------↓")
+        log("🎶 Descargas finalizadas.", Fore.GREEN)
 
     finally:
+        log("Ejecutando conversión de audio...", Fore.CYAN)
         os.system('node ./convert_audio.js')
-        if mylist:  # solo si hay algo que eliminar
+        if mylist:
             remove_links_from_file(mylist, fileWithLinks)
+            log("Links eliminados del archivo.", Fore.CYAN)
+        log("Proceso finalizado. ✅", Fore.GREEN)
 
 if __name__ == "__main__":
     main()
