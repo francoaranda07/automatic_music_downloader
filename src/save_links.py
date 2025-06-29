@@ -6,13 +6,17 @@ validLink = 'https://www.youtube.com/watch?v=xxxxxxxxxxx'
 webmFolder = './webm'
 mp3Folder = './mp3'
 
+def ensure_file_exists(filename):
+    if not os.path.exists(filename):
+        with open(filename, 'w') as f:
+            pass  # crea el archivo vacío
+
 def create_webm_folder_if_not_exists(folder_route):
     if not os.path.exists(folder_route):
         os.makedirs(folder_route)
         print(f"Carpeta creada: {folder_route} ✅")
     else:
         print(f"La carpeta ya existe: {folder_route} 📂")
-        # Eliminar contenido de la carpeta
         file_in_folder = os.listdir(webmFolder)
         for file in file_in_folder:
             folder_route = os.path.join(webmFolder, file)
@@ -32,7 +36,6 @@ def create_mp3_folder_if_not_exists(folder_route):
         print(f"Carpeta creada: {folder_route} ✅")
     else:
         print(f"La carpeta ya existe: {folder_route} 📂")
-        # Eliminar contenido de la carpeta
         file_in_folder = os.listdir(mp3Folder)
         for file in file_in_folder:
             folder_route = os.path.join(mp3Folder, file)
@@ -47,34 +50,22 @@ def create_mp3_folder_if_not_exists(folder_route):
                 print(f"No se pudo eliminar {folder_route}: {e}")
 
 def adjust_length(fileWithLinks, validLink):
-    # Longitud de un enlace de YouTube válido
     youtube_link_length = len(validLink)
-
-    # Lista para almacenar las líneas ajustadas
     adjusted_lines = []
 
-    # Abrir el archivo de entrada y leer cada línea
     with open(fileWithLinks, 'r') as file:
         for line in file:
-            # Eliminar espacios en blanco al inicio y al final de la línea
             line = line.strip()
-
-            # Ajustar la longitud de la línea si es necesario
             if len(line) != youtube_link_length:
-                # Si la longitud es diferente, truncar o rellenar la línea
                 line = line[:youtube_link_length].ljust(youtube_link_length)
                 print("✂️ Línea ajustada:", line)
             else:
                 print("✅ Línea válida:", line)
-
-            # Agregar la línea ajustada a la lista
             adjusted_lines.append(line)
 
-    # Escribir las líneas ajustadas de vuelta al archivo
     with open(fileWithLinks, 'w') as file:
         for line in adjusted_lines:
             file.write(line + '\n')
-
     print("✍️ Archivo guardado con las líneas ajustadas.")
 
 def sanitize_link(link):
@@ -87,7 +78,7 @@ def save_links_to_file(links, filename):
 def remove_links_from_file(links, filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
-    
+
     with open(filename, 'w') as file:
         for line in lines:
             if line.strip() not in links:
@@ -100,6 +91,9 @@ def is_link_already_saved(link, filename):
 def main():
     create_webm_folder_if_not_exists(webmFolder)
     create_mp3_folder_if_not_exists(mp3Folder)
+    ensure_file_exists(fileWithLinks)
+    mylist = []  # <- ahora siempre existe, aunque no se entre al try
+
     try:
         while True:
             youtube_link = input("Introduce un enlace de YouTube (o CTRL+C para salir): ").strip()
@@ -108,32 +102,31 @@ def main():
                 print("🗑️ Enlace inválido. Demasiado corto.")
             else:
                 sanitized_link = sanitize_link(youtube_link)
-                filename = fileWithLinks
-
-                if is_link_already_saved(sanitized_link, filename):
+                if is_link_already_saved(sanitized_link, fileWithLinks):
                     print("🗑️ -> El enlace ya está guardado.")
                 else:
-                    save_links_to_file([sanitized_link], filename)
+                    save_links_to_file([sanitized_link], fileWithLinks)
                     print("✅ Enlace guardado")
 
     except (KeyboardInterrupt, EOFError):
         print("\n--------------------------------↓")
         print("Iniciando la descarga")
         adjust_length(fileWithLinks, validLink)
+
         with open(fileWithLinks) as f:
             mylist = [line.rstrip('\n') for line in f]
-        
+
         for link in mylist:
             print(link)
             extractSound(link)
-        print("\n")
-        print("Descargados")
+
+        print("\nDescargados")
         print("----------------------------------↓")
 
     finally:
-        # Ejecutar convert_audio.js con Node.js
-        os.system('node ./src/convert_audio.js')
-        remove_links_from_file(mylist, fileWithLinks)
+        os.system('node ./convert_audio.js')
+        if mylist:  # solo si hay algo que eliminar
+            remove_links_from_file(mylist, fileWithLinks)
 
 if __name__ == "__main__":
     main()
